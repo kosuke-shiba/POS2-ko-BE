@@ -6,6 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine
 from pydantic import BaseModel, EmailStr
+import os
 
 # FastAPIアプリケーションのインスタンス作成
 app = FastAPI()
@@ -92,4 +93,5 @@ def login():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
