@@ -4,9 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, select
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import create_engine
 from pydantic import BaseModel, EmailStr
 import os
+import logging
+
+# ロギング設定
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # FastAPIアプリケーションのインスタンス作成
 app = FastAPI()
@@ -39,15 +43,22 @@ def get_data():
     }
     return sample_data
 
- #MySQLデータベース接続設定
-#DATABASE_URL = "mysql+pymysql://username:password@localhost/POS"  # 必要に応じて変更
-DATABASE_URL = "mysql+pymysql://kosuke:Magmag33@127.0.0.1:3306/POS"  # 必要に応じて変更
-engine = create_engine(DATABASE_URL)
+#MySQLデータベース接続設定
+#DATABASE_URL = "mysql+pymysql://root@127.0.0.1:3306/POS2Ko"  # 必要に応じて変更
+DATABASE_URL = "mysql+pymysql://Tech0Gen8TA2:gen8-1-ta%402@tech0-gen-8-step4-db-2.mysql.database.azure.com:3306/class2_db"
+engine = create_engine(DATABASE_URL, echo=True, 
+    connect_args={
+        "ssl": {
+            "ca": "/Users/kosuke/tech0/DigiCertGlobalRootCA.crt.pem"  # 実際のCA証明書のパスに置き換えてください
+        }
+    }
+)
+
 metadata = MetaData()
 
 # 商品テーブルの定義
 PrdMaster = Table(
-    "PrdMaster", metadata,
+    "m_product_ko", metadata,
     Column("PRD_ID", Integer, primary_key=True),
     Column("CODE", String(13), unique=True),
     Column("NAME", String(50)),
@@ -57,6 +68,7 @@ PrdMaster = Table(
 # 商品コードで商品名を検索するエンドポイント
 @app.get("/product/{code}")
 async def get_product_by_code(code: str):
+    logger.info(f"Received request for product code: {code}")
     try:
         # データベース接続とクエリ実行
         with engine.connect() as connection:
@@ -68,6 +80,7 @@ async def get_product_by_code(code: str):
             raise HTTPException(status_code=404, detail="Product not found")
         
         # 結果を返す
+        logger.info(f"Product name for code {code}: {result[0]}")
         return {"code": code, "name": result[0]}
     
     except Exception as e:
