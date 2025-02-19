@@ -5,8 +5,16 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, 
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic import BaseModel, EmailStr
+from dotenv import load_dotenv
 import os
 import logging
+import ssl
+
+#　環境変数-CA証明書
+load_dotenv()
+ca_cert = os.getenv("CA_CERT")
+if ca_cert is None:
+    raise ValueError("CA_CERT environment variable is not set")
 
 # ロギング設定
 logging.basicConfig(level=logging.INFO)
@@ -46,11 +54,13 @@ def get_data():
 #MySQLデータベース接続設定
 #DATABASE_URL = "mysql+pymysql://root@127.0.0.1:3306/POS2Ko"  # 必要に応じて変更
 DATABASE_URL = "mysql+pymysql://Tech0Gen8TA2:gen8-1-ta%402@tech0-gen-8-step4-db-2.mysql.database.azure.com:3306/class2_db"
+ssl_context = ssl.create_default_context(cadata=ca_cert)
 engine = create_engine(DATABASE_URL, echo=True, 
     connect_args={
-        "ssl": {
-            "ca": "/Users/kosuke/tech0/DigiCertGlobalRootCA.crt.pem"  # 実際のCA証明書のパスに置き換えてください
-        }
+#        "ssl": {
+#            "ca": "/Users/kosuke/tech0/DigiCertGlobalRootCA.crt.pem"  # 実際のCA証明書のパスに置き換えてください
+#        }
+        "ssl": ssl_context
     }
 )
 
