@@ -9,12 +9,14 @@ from dotenv import load_dotenv
 import os
 import logging
 import ssl
+import base64
 
 #　環境変数-CA証明書
 load_dotenv()
-ca_cert = os.getenv("CA_CERT")
-if ca_cert is None:
+encoded_ca_cert = os.getenv("CA_CERT")
+if encoded_ca_cert is None:
     raise ValueError("CA_CERT environment variable is not set")
+ca_cert = base64.b64decode(encoded_ca_cert).decode("utf-8")
 
 # ロギング設定
 logging.basicConfig(level=logging.INFO)
